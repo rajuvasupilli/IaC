@@ -28,7 +28,7 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_DEFAULT_REGION}") {
                     sh '''
-                      cd ecr-repo
+                      cd ecr
                       terraform plan -out=tfplan
                     '''
                 }
