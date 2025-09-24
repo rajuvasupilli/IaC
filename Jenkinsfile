@@ -7,7 +7,7 @@ pipeline {
         TF_DIR            = "${WORKSPACE}\\tools\\terraform"  // local install dir
         PATH              = "${WORKSPACE}\\tools\\terraform;${env.PATH}"
     }
-}
+
 
 
     stages {
