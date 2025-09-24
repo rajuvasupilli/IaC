@@ -91,12 +91,10 @@ pipeline {
                       docker build -t ${env:IMAGE_NAME}:${env:IMAGE_TAG} .
 
                       Write-Host "Tagging Docker image for ECR..."
-                      docker tag ${env:IMAGE_NAME}:${env:IMAGE_TAG} $repoUri:${env:IMAGE_TAG}
+                      docker tag "${env:IMAGE_NAME}:${env:IMAGE_TAG}" "${repoUri}:${env:IMAGE_TAG}"
+docker push "${repoUri}:${env:IMAGE_TAG}"
+Write-Host "Docker image pushed successfully: ${repoUri}:${env:IMAGE_TAG}"
 
-                      Write-Host "Pushing Docker image to ECR..."
-                      docker push $repoUri:${env:IMAGE_TAG}
-
-                      Write-Host "Docker image pushed successfully: $repoUri:${env:IMAGE_TAG}"
                     '''
                 }
             }
