@@ -82,10 +82,12 @@ pipeline {
                     powershell '''
                       # Get the ECR repository URI from Terraform output
                       cd ecr
-                      $repoUri = terraform output -raw ecr_repository_url
+$ecrUri = "830325870084.dkr.ecr.us-east-1.amazonaws.com/my-app-repo"
+$pass = (Get-ECRLoginPassword -Region us-east-1) # Custom PowerShell wrapper, or
+$pass = aws ecr get-login-password --region us-east-1
+docker login --username AWS --password $pass $ecrUri
 
-                      Write-Host "Logging in to ECR..."
-                      aws ecr get-login-password --region ${env:AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin $repoUri
+
 
                       Write-Host "Building Docker image..."
                       docker build -t ${env:IMAGE_NAME}:${env:IMAGE_TAG} .
