@@ -5,8 +5,10 @@ pipeline {
         AWS_DEFAULT_REGION = 'us-east-1'
         TF_VERSION        = '1.9.5'      // desired Terraform version
         TF_DIR            = "${WORKSPACE}\\tools\\terraform"  // local install dir
-        PATH              = "${WORKSPACE}\\tools\\terraform;${env:PATH}"
+        PATH              = "${WORKSPACE}\\tools\\terraform;${env.PATH}"
     }
+}
+
 
     stages {
         stage('Install Terraform') {
