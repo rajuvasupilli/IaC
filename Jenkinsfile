@@ -3,34 +3,42 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = 'us-east-1'
-        TF_VERSION        = '1.9.5'          // pick any Terraform version you need
+        TF_VERSION        = '1.9.5'      // desired Terraform version
+        TF_DIR            = "${WORKSPACE}\\tools\\terraform"  // local install dir
+        PATH              = "${WORKSPACE}\\tools\\terraform;${env:PATH}"
     }
 
     stages {
         stage('Install Terraform') {
             steps {
-                sh '''
-                  set -e
-                  echo "Installing Terraform ${TF_VERSION} ..."
-                  curl -sSL https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip -o terraform.zip
-                  unzip -o terraform.zip
-                  sudo mv terraform /usr/local/bin/terraform
-                  rm -f terraform.zip
-                  terraform -version
+                powershell '''
+                  $tfVer = "${env:TF_VERSION}"
+                  $dest  = "${env:TF_DIR}"
+
+                  if (!(Test-Path $dest)) { New-Item -ItemType Directory -Force -Path $dest | Out-Null }
+
+                  Write-Host "Downloading Terraform $tfVer for Windows..."
+                  $zipPath = "$env:WORKSPACE\\terraform.zip"
+                  Invoke-WebRequest -Uri "https://releases.hashicorp.com/terraform/$tfVer/terraform_${tfVer}_windows_amd64.zip" -OutFile $zipPath
+
+                  Write-Host "Extracting..."
+                  Expand-Archive -Path $zipPath -DestinationPath $dest -Force
+                  Remove-Item $zipPath
+
+                  Write-Host "Terraform installed at $dest"
+                  & "$dest\\terraform.exe" -version
                 '''
             }
         }
 
         stage('Checkout') {
-            steps {
-                checkout scm
-            }
+            steps { checkout scm }
         }
 
         stage('Terraform Init') {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_DEFAULT_REGION}") {
-                    sh '''
+                    powershell '''
                       cd ecr
                       terraform init
                     '''
@@ -41,7 +49,7 @@ pipeline {
         stage('Terraform Plan') {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_DEFAULT_REGION}") {
-                    sh '''
+                    powershell '''
                       cd ecr
                       terraform plan -out=tfplan
                     '''
@@ -58,7 +66,7 @@ pipeline {
         stage('Terraform Apply') {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_DEFAULT_REGION}") {
-                    sh '''
+                    powershell '''
                       cd ecr
                       terraform apply -auto-approve tfplan
                     '''
@@ -68,7 +76,7 @@ pipeline {
     }
 
     post {
-        success  { echo "ECR Repository deployed successfully." }
-        failure  { echo "Pipeline failed. Check logs." }
+        success { echo "ECR Repository deployed successfully." }
+        failure { echo "Pipeline failed. Check logs." }
     }
 }
