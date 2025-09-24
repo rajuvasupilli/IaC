@@ -17,7 +17,7 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_DEFAULT_REGION}") {
                     sh '''
-                      cd ecr-repo
+                      cd ecr
                       terraform init
                     '''
                 }
@@ -48,7 +48,7 @@ pipeline {
             steps {
                 withAWS(credentials: 'aws-creds', region: "${AWS_DEFAULT_REGION}") {
                     sh '''
-                      cd ecr-repo
+                      cd ecr
                       terraform apply -auto-approve tfplan
                     '''
                 }
